@@ -1,6 +1,8 @@
 # rainbowCompressor
 rainbow compressor for pre-compression of files to reduce entropy
 
+use the tri
+
 testing purposes only for now WIP
 
 
