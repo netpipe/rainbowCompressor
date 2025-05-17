@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QCommandLineParser>
 #include <QCommandLineOption>
+#include <QDataStream>
 
 QMap<QByteArray, QByteArray> buildTrigramDictionary(const QByteArray &input, int maxTokens = 255) {
     QMap<QByteArray, int> freq;
@@ -14,20 +15,23 @@ QMap<QByteArray, QByteArray> buildTrigramDictionary(const QByteArray &input, int
         freq[trigram]++;
     }
 
-    // Sort by frequency
-    QList<QPair<QByteArray, int>> freqList = freq.toStdMap().toStdVector().toList();
-    std::sort(freqList.begin(), freqList.end(), [](const auto &a, const auto &b) {
+    QList<QPair<QByteArray, int>> freqList;
+    for (auto it = freq.begin(); it != freq.end(); ++it) {
+        freqList.append(qMakePair(it.key(), it.value()));
+    }
+
+    std::sort(freqList.begin(), freqList.end(), [](const QPair<QByteArray, int> &a, const QPair<QByteArray, int> &b) {
         return a.second > b.second;
     });
 
-    // Build dictionary: trigram → byte
     QMap<QByteArray, QByteArray> dict;
     for (int i = 0; i < qMin(maxTokens, freqList.size()); ++i) {
-        QByteArray token(1, static_cast<char>(i + 1)); // avoid null byte
+        QByteArray token(1, static_cast<char>(i + 1)); // skip null byte
         dict[freqList[i].first] = token;
     }
     return dict;
 }
+
 
 QByteArray compress(const QByteArray &input, const QMap<QByteArray, QByteArray> &dict) {
     QByteArray output;
